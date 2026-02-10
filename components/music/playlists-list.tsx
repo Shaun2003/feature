@@ -6,7 +6,7 @@ import { Music, Trash2, Lock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface Playlist {
   id: string;
@@ -27,6 +27,7 @@ export function PlaylistsList({ onPlaylistDeleted, showDelete = true }: Playlist
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     loadPlaylists();

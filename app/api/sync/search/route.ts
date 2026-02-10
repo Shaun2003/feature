@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServerClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
+  const supabase = createServerClient();
 
   const {
     data: { user },
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
+  const supabase = createServerClient();
 
   const {
     data: { user },

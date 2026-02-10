@@ -6,7 +6,7 @@ import { ArrowLeft, Play, Pause, Download, Share2, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getPlaylistItems, type YouTubeVideo } from "@/lib/youtube";
-import { usePlayer, type Song } from "@/contexts/player-context";
+import { usePlayer, type Song } from "@/hooks/use-player";
 import { TrackRow } from "@/components/music/track-row";
 import { downloadTrack, isTrackDownloaded } from "@/lib/offline-download";
 import { useToast } from "@/hooks/use-toast";

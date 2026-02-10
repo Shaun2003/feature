@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   getGamification, formatLevel, getXPProgress, getXPForNextLevel,
   type UserGamification,
@@ -46,6 +46,7 @@ export function ProfileContent({ profile, stats: initialStats }: ProfileContentP
   const [gamification, setGamification] = useState<UserGamification | null>(null);
   const [listeningStats, setListeningStats] = useState<ListeningStats | null>(null);
   const supabase = createClient();
+  const { toast } = useToast();
 
   useEffect(() => {
     setMounted(true);

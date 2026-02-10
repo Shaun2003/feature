@@ -9,8 +9,8 @@ import { PageHeader } from '@/components/ui/page-header';
 import { TrackRow } from '@/components/music/track-row';
 import { AddToPlaylistDialog } from '@/components/music/add-to-playlist-dialog';
 import { ImportSongsDialog } from '@/components/music/import-songs-dialog';
-import { toast } from '@/hooks/use-toast';
-import { usePlayer, type Song } from '@/contexts/player-context';
+import { useToast } from '@/hooks/use-toast';
+import { usePlayer, type Song } from '@/hooks/use-player';
 
 interface Playlist {
   id: string;
@@ -33,6 +33,7 @@ export default function PlaylistDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { playQueue } = usePlayer();
+  const { toast } = useToast();
   const playlistId = params.id as string;
 
   const [playlist, setPlaylist] = useState<Playlist | null>(null);

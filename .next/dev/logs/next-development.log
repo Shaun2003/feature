@@ -1,0 +1,59 @@
+[00:00:24.317] Server  LOG     > [PWA] PWA support is disabled
+[00:00:24.319] Server  LOG     > [PWA] PWA support is disabled
+[00:00:25.860] Server  LOG     ✓ Ready in 20.6s
+[00:00:31.518] Server  LOG     ○ Compiling /auth/login ...
+[00:00:39.934] Server  WARN    ⚠ Cross origin request detected from 9000-firebase-feature-1770627768798.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+[00:05:39.571] Server  WARN    ⚠ ./app/layout.tsx
+Attempted import error: 'ToastProvider' is not exported from '@/hooks/use-toast' (imported as 'ToastProvider').
+
+Import trace for requested module:
+./app/layout.tsx
+[00:05:40.387] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[00:05:40.923] Server  ERROR   ⨯ Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+[00:05:48.866] Browser ERROR   {}
+[00:05:48.866] Browser ERROR   uncaughtError: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check the render method of `RootLayout`.
+[00:06:14.442] Server  WARN    ⚠ ./app/layout.tsx
+Attempted import error: 'ToastProvider' is not exported from '@/hooks/use-toast' (imported as 'ToastProvider').
+
+Import trace for requested module:
+./app/layout.tsx
+[00:06:14.993] Server  ERROR   ⨯ Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+[00:06:18.497] Browser ERROR   {}
+[00:06:18.497] Browser ERROR   uncaughtError: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check the render method of `RootLayout`.
+[00:06:49.992] Server  WARN    ⚠ ./app/layout.tsx
+Attempted import error: 'ToastProvider' is not exported from '@/hooks/use-toast' (imported as 'ToastProvider').
+
+Import trace for requested module:
+./app/layout.tsx
+[00:06:50.123] Server  WARN    ⚠ ./app/layout.tsx
+Attempted import error: 'ToastProvider' is not exported from '@/hooks/use-toast' (imported as 'ToastProvider').
+
+Import trace for requested module:
+./app/layout.tsx
+[00:06:50.986] Server  ERROR   ⨯ Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+[00:06:51.252] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:06:51.260] Server  WARN    ⚠ ./app/layout.tsx
+Attempted import error: 'ToastProvider' is not exported from '@/hooks/use-toast' (imported as 'ToastProvider').
+
+Import trace for requested module:
+./app/layout.tsx
+[00:06:57.077] Browser ERROR   {}
+[00:06:57.077] Browser ERROR   uncaughtError: Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+Check the render method of `RootLayout`.
+[00:15:39.779] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[00:15:39.779] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/auth/login","route":"/auth/login"}
+[00:15:39.779] Browser LOG     %c[Vercel Web Analytics]%c [pageview] https://9000-firebase-feature-1770627768798.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev/auth/login?monospaceUid=527207 color: rgb(120, 120, 120) color: inherit {"dp":"/auth/login","o":"https://9000-firebase-feature-1770627768798.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev/auth/login?monospaceUid=527207","sdkn":"@vercel/analytics/next","sdkv":"1.3.1","sv":"0.1.3","ts":1770705214910}
+[01:15:53.020] Browser INFO    %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+[01:15:53.301] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[01:15:53.301] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/auth/login","route":"/auth/login"}
+[01:15:53.301] Browser LOG     %c[Vercel Web Analytics]%c [pageview] http://0.0.0.0:9000/auth/login color: rgb(120, 120, 120) color: inherit {"dp":"/auth/login","o":"http://0.0.0.0:9000/auth/login","r":"","sdkn":"@vercel/analytics/next","sdkv":"1.3.1","sv":"0.1.3","ts":1770708829168}
+[01:17:27.917] Server  WARN    ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+[01:17:30.938] Browser LOG     %c[Vercel Web Analytics]%c Debug mode is enabled by default in development. No requests will be sent to the server. color: rgb(120, 120, 120) color: inherit
+[01:17:30.938] Browser LOG     %c[Vercel Web Analytics]%c Running queued event color: rgb(120, 120, 120) color: inherit pageview {"path":"/auth/login","route":"/auth/login"}
+[01:17:30.938] Browser LOG     %c[Vercel Web Analytics]%c [pageview] https://9000-firebase-feature-1770627768798.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev/auth/login color: rgb(120, 120, 120) color: inherit {"dp":"/auth/login","o":"https://9000-firebase-feature-1770627768798.cluster-cbeiita7rbe7iuwhvjs5zww2i4.cloudworkstations.dev/auth/login","sdkn":"@vercel/analytics/next","sdkv":"1.3.1","sv":"0.1.3","ts":1770708926546}

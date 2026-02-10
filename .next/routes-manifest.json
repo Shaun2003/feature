@@ -1,0 +1,237 @@
+{
+  "version": 3,
+  "pages404": true,
+  "appType": "app",
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "priority": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "rewrites": {
+    "beforeFiles": [],
+    "afterFiles": [],
+    "fallback": []
+  },
+  "dynamicRoutes": [
+    {
+      "page": "/album/[id]",
+      "regex": "^/album/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/album/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/artists/[id]",
+      "regex": "^/artists/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/artists/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/playlists/[id]",
+      "regex": "^/playlists/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/playlists/(?<nxtPid>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_global-error",
+      "regex": "^/_global\\-error(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_global\\-error(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/api/gamification/like",
+      "regex": "^/api/gamification/like(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/gamification/like(?:/)?$"
+    },
+    {
+      "page": "/api/gamification/play",
+      "regex": "^/api/gamification/play(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/gamification/play(?:/)?$"
+    },
+    {
+      "page": "/api/gamification/playlist",
+      "regex": "^/api/gamification/playlist(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/gamification/playlist(?:/)?$"
+    },
+    {
+      "page": "/api/import/apple-music",
+      "regex": "^/api/import/apple\\-music(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/import/apple\\-music(?:/)?$"
+    },
+    {
+      "page": "/api/import/spotify",
+      "regex": "^/api/import/spotify(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/import/spotify(?:/)?$"
+    },
+    {
+      "page": "/api/import/youtube",
+      "regex": "^/api/import/youtube(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/import/youtube(?:/)?$"
+    },
+    {
+      "page": "/api/playlists/create",
+      "regex": "^/api/playlists/create(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/playlists/create(?:/)?$"
+    },
+    {
+      "page": "/api/playlists/list",
+      "regex": "^/api/playlists/list(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/playlists/list(?:/)?$"
+    },
+    {
+      "page": "/api/playlists/reorder",
+      "regex": "^/api/playlists/reorder(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/playlists/reorder(?:/)?$"
+    },
+    {
+      "page": "/api/playlists/tracks",
+      "regex": "^/api/playlists/tracks(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/playlists/tracks(?:/)?$"
+    },
+    {
+      "page": "/api/playlists/update",
+      "regex": "^/api/playlists/update(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/playlists/update(?:/)?$"
+    },
+    {
+      "page": "/api/sync/bookmarks",
+      "regex": "^/api/sync/bookmarks(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/sync/bookmarks(?:/)?$"
+    },
+    {
+      "page": "/api/sync/history",
+      "regex": "^/api/sync/history(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/sync/history(?:/)?$"
+    },
+    {
+      "page": "/api/sync/liked",
+      "regex": "^/api/sync/liked(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/sync/liked(?:/)?$"
+    },
+    {
+      "page": "/api/sync/search",
+      "regex": "^/api/sync/search(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/sync/search(?:/)?$"
+    },
+    {
+      "page": "/api/sync/user-data",
+      "regex": "^/api/sync/user\\-data(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/sync/user\\-data(?:/)?$"
+    },
+    {
+      "page": "/artists",
+      "regex": "^/artists(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/artists(?:/)?$"
+    },
+    {
+      "page": "/auth/login",
+      "regex": "^/auth/login(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/login(?:/)?$"
+    },
+    {
+      "page": "/auth/sign-up",
+      "regex": "^/auth/sign\\-up(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/auth/sign\\-up(?:/)?$"
+    },
+    {
+      "page": "/library",
+      "regex": "^/library(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/library(?:/)?$"
+    },
+    {
+      "page": "/player",
+      "regex": "^/player(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/player(?:/)?$"
+    },
+    {
+      "page": "/playlists",
+      "regex": "^/playlists(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/playlists(?:/)?$"
+    },
+    {
+      "page": "/profile",
+      "regex": "^/profile(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/profile(?:/)?$"
+    },
+    {
+      "page": "/search",
+      "regex": "^/search(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/search(?:/)?$"
+    },
+    {
+      "page": "/stats",
+      "regex": "^/stats(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/stats(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "rsc",
+    "varyHeader": "rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch",
+    "prefetchHeader": "next-router-prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSegmentHeader": "next-router-segment-prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments",
+    "clientParamParsing": false,
+    "dynamicRSCPrerender": false
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  }
+}

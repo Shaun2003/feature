@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface PlaylistDialogProps {
   open: boolean;
@@ -21,6 +20,7 @@ export function CreatePlaylistDialog({ open, onOpenChange, onPlaylistCreated }: 
   const [description, setDescription] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleCreate = async () => {
     if (!name.trim()) {
@@ -48,7 +48,20 @@ export function CreatePlaylistDialog({ open, onOpenChange, onPlaylistCreated }: 
       const { data: playlist } = await response.json();
       toast({ title: 'Success', description: 'Playlist created successfully' });
       
-      // Reset form
+      const gamificationResponse = await fetch('/api/gamification/playlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: 'user-id' }),
+      });
+      const { newAchievements, leveledUp } = await gamificationResponse.json();
+
+      if (newAchievements.length > 0) {
+        toast({ title: 'Achievement Unlocked!', description: newAchievements[0].title });
+      }
+      if (leveledUp) {
+        toast({ title: 'Level Up!', description: "You've reached a new level!" });
+      }
+
       setName('');
       setDescription('');
       setIsPublic(false);

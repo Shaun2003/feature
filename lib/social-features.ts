@@ -38,7 +38,7 @@ export interface FollowUser {
 export async function getUserProfile(userId: string): Promise<UserProfile | null> {
   try {
     const { data, error } = await supabase
-      .from("users_profile")
+      .from("profiles")
       .select("*")
       .eq("id", userId)
       .single();
@@ -74,7 +74,7 @@ export async function updateUserProfile(
 ): Promise<UserProfile | null> {
   try {
     const { error } = await supabase
-      .from("users_profile")
+      .from("profiles")
       .update({
         display_name: updates.displayName,
         bio: updates.bio,
@@ -235,7 +235,7 @@ export async function getFollowRecommendations(): Promise<FollowUser[]> {
 
     // Get recommendations: users followed by followed users
     const { data: profiles, error } = await supabase
-      .from("users_profile")
+      .from("profiles")
       .select("id, display_name, avatar_url")
       .eq("is_public", true)
       .neq("id", user.id)

@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
+import { createServerClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -46,7 +46,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createServerClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

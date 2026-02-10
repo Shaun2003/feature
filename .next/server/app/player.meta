@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(app)/layout,_N_T_/(app)/player/layout,_N_T_/(app)/player/page,_N_T_/player"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/!KGFwcCk/player/__PAGE__",
+    "/!KGFwcCk/player",
+    "/!KGFwcCk",
+    "/_index",
+    "/_head"
+  ]
+}

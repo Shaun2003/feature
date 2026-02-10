@@ -1,9 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
+import { createServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { ProfileContent } from "@/components/music/profile-content";
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
+  const supabase = createServerClient();
 
   const {
     data: { user },

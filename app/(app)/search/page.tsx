@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X, Loader2, Clock, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -13,9 +13,9 @@ import {
 } from "@/lib/youtube";
 import { TrackCard } from "@/components/music/track-card";
 import { TrackRow } from "@/components/music/track-row";
-import { usePlayer, type Song } from "@/contexts/player-context";
+import { usePlayer, type Song } from "@/hooks/use-player";
 import { useToast } from "@/hooks/use-toast";
-import { downloadTrack, getDownloadedTracks, type StoredDownload } from "@/lib/offline-download";
+import { downloadTrack, getDownloadedTracks } from "@/lib/offline-download";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
@@ -24,6 +24,8 @@ import {
   removeSearchHistoryItem,
   clearSearchHistory,
 } from "@/lib/search-history";
+import { searchArtists, searchAlbums, type Artist, type Album } from "@/lib/supabase/search";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const genreSearches = [
   { name: "Pop", color: "from-pink-500 to-rose-500", query: "pop hits 2024" },
@@ -40,6 +42,8 @@ export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<YouTubeVideo[]>([]);
   const [playlists, setPlaylists] = useState<PlaylistItem[]>([]);
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
   const [trending, setTrending] = useState<YouTubeVideo[]>([]);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -50,6 +54,7 @@ export default function SearchPage() {
   const debouncedQuery = useDebounce(query, 500);
   const { playQueue } = usePlayer();
   const { toast } = useToast();
+  const router = useRouter();
 
   // Load trending and search history on mount
   useEffect(() => {
@@ -64,11 +69,9 @@ export default function SearchPage() {
         setIsLoadingTrending(false);
       }
 
-      // Load search history
       const history = getSearchHistory();
       setSearchHistory(history.map((item) => item.query));
 
-      // Load downloaded tracks
       try {
         const downloaded = await getDownloadedTracks();
         const downloadedIdSet = new Set(downloaded.map((d) => d.id));
@@ -86,15 +89,24 @@ export default function SearchPage() {
       if (!debouncedQuery.trim()) {
         setResults([]);
         setPlaylists([]);
+        setArtists([]);
+        setAlbums([]);
         return;
       }
 
       setIsSearching(true);
       try {
-        const { videos, playlists: foundPlaylists } =
-          await searchYouTube(debouncedQuery);
-        setResults(videos);
-        setPlaylists(foundPlaylists || []);
+        const [youtubeResults, artistResults, albumResults] = await Promise.all([
+          searchYouTube(debouncedQuery),
+          searchArtists(debouncedQuery),
+          searchAlbums(debouncedQuery),
+        ]);
+
+        setResults(youtubeResults.videos);
+        setPlaylists(youtubeResults.playlists || []);
+        setArtists(artistResults);
+        setAlbums(albumResults);
+
         addSearchToHistory(debouncedQuery);
         setSearchHistory(getSearchHistory().map((item) => item.query));
       } catch (error) {
@@ -109,20 +121,6 @@ export default function SearchPage() {
   const handleGenreClick = async (genre: { name: string; query: string }) => {
     setSelectedGenre(genre.name);
     setQuery(genre.name);
-    setIsSearching(true);
-    try {
-      const { videos, playlists: foundPlaylists } = await searchYouTube(
-        genre.query
-      );
-      setResults(videos);
-      setPlaylists(foundPlaylists || []);
-      addSearchToHistory(genre.name);
-      setSearchHistory(getSearchHistory().map((item) => item.query));
-    } catch (error) {
-      console.error("[v0] Genre search error:", error);
-    } finally {
-      setIsSearching(false);
-    }
   };
 
   const handleHistoryClick = (historyQuery: string) => {
@@ -143,6 +141,8 @@ export default function SearchPage() {
     setQuery("");
     setResults([]);
     setPlaylists([]);
+    setArtists([]);
+    setAlbums([]);
     setSelectedGenre(null);
   };
 
@@ -193,14 +193,12 @@ export default function SearchPage() {
   };
 
   const showResults = query.trim() || selectedGenre;
+  const hasResults = results.length > 0 || playlists.length > 0 || artists.length > 0 || albums.length > 0;
 
   return (
     <div className="space-y-8">
-      {/* Search Header */}
       <div className="space-y-4">
         <h1 className="text-3xl font-bold text-foreground">Search</h1>
-
-        {/* Search Input */}
         <div className="relative max-w-xl">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <Input
@@ -226,20 +224,39 @@ export default function SearchPage() {
         </div>
       </div>
 
-      {/* Loading State */}
       {isSearching && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       )}
 
-      {/* Search Results */}
-      {!isSearching && showResults && (results.length > 0 || playlists.length > 0) && (
+      {!isSearching && showResults && hasResults && (
         <section className="space-y-8">
-          {/* Albums/Playlists */}
+          {artists.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-foreground">Artists</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {artists.map((artist) => (
+                  <ArtistCard key={artist.id} artist={artist} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {albums.length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-foreground">Albums</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {albums.map((album) => (
+                  <AlbumCard key={album.id} album={album} />
+                ))}
+              </div>
+            </div>
+          )}
+
           {playlists.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-xl font-bold text-foreground">Albums & Playlists</h2>
+              <h2 className="text-xl font-bold text-foreground">Playlists</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {playlists.map((playlist) => (
                   <PlaylistCard key={playlist.id} playlist={playlist} />
@@ -248,13 +265,10 @@ export default function SearchPage() {
             </div>
           )}
 
-          {/* Songs */}
           {results.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-foreground">
-                  {selectedGenre ? `${selectedGenre} Music` : `Results for "${query}"`}
-                </h2>
+                <h2 className="text-xl font-bold text-foreground">Songs</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -264,57 +278,24 @@ export default function SearchPage() {
                   Play all
                 </Button>
               </div>
-
-              {/* Top Result + Songs Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-6">
-                {/* Top Result */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-muted-foreground">
-                    Top result
-                  </h3>
-                  <TopResultCard track={results[0]} />
-                </div>
-
-                {/* Songs List */}
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-muted-foreground">
-                    Songs
-                  </h3>
-                  <div className="space-y-1">
-                    {results.slice(1, 5).map((track, index) => (
-                      <TrackRow 
-                        key={track.id} 
-                        track={track} 
-                        index={index + 1}
-                        onDownloadClick={() => handleDownloadTrack(track)}
-                        isDownloaded={downloadedIds.has(track.id)}
-                        isDownloading={downloadingIds.has(track.id)}
-                      />
-                    ))}
-                  </div>
-                </div>
+              <div className="space-y-1">
+                {results.map((track, index) => (
+                  <TrackRow
+                    key={track.id}
+                    track={track}
+                    index={index + 1}
+                    onDownloadClick={() => handleDownloadTrack(track)}
+                    isDownloaded={downloadedIds.has(track.id)}
+                    isDownloading={downloadingIds.has(track.id)}
+                  />
+                ))}
               </div>
-
-              {/* All Results Grid */}
-              {results.length > 5 && (
-                <div className="pt-4">
-                  <h3 className="text-xl font-bold text-foreground mb-4">
-                    More Results
-                  </h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                    {results.slice(5).map((track) => (
-                      <TrackCard key={track.id} track={track} />
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </section>
       )}
 
-      {/* No Results */}
-      {!isSearching && showResults && results.length === 0 && (
+      {!isSearching && showResults && !hasResults && (
         <div className="text-center py-12">
           <p className="text-muted-foreground">No results found for "{query}"</p>
           <p className="text-sm text-muted-foreground mt-1">
@@ -323,10 +304,8 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Browse All (when not searching) */}
       {!showResults && !isSearching && (
         <>
-          {/* Search History */}
           {searchHistory.length > 0 && (
             <section className="space-y-4">
               <div className="flex items-center justify-between">
@@ -374,7 +353,6 @@ export default function SearchPage() {
             </section>
           )}
 
-          {/* Genre Cards */}
           <section className="space-y-4">
             <h2 className="text-xl font-bold text-foreground">Browse all</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -382,7 +360,7 @@ export default function SearchPage() {
                 <button
                   key={genre.name}
                   onClick={() => handleGenreClick(genre)}
-                  className={`relative h-24 md:h-28 rounded-lg bg-linear-to-br ${genre.color} p-4 text-left overflow-hidden hover:scale-[1.02] transition-transform`}
+                  className={`relative h-24 md:h-28 rounded-lg bg-gradient-to-br ${genre.color} p-4 text-left overflow-hidden hover:scale-[1.02] transition-transform`}
                 >
                   <h3 className="text-lg md:text-xl font-bold text-foreground">
                     {genre.name}
@@ -392,7 +370,6 @@ export default function SearchPage() {
             </div>
           </section>
 
-          {/* Trending Section */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-foreground">
@@ -431,77 +408,64 @@ export default function SearchPage() {
   );
 }
 
-function TopResultCard({ track }: { track: YouTubeVideo }) {
-  const { playSong, currentSong, isPlaying, togglePlayPause } = usePlayer();
+function ArtistCard({ artist }: { artist: Artist }) {
+  const router = useRouter();
 
-  const isCurrentTrack = currentSong?.id === track.id;
-  const isCurrentlyPlaying = isCurrentTrack && isPlaying;
-
-  const handlePlay = () => {
-    if (isCurrentTrack) {
-      togglePlayPause();
-    } else {
-      playSong(track as Song);
-    }
+  const handleNavigateToArtist = () => {
+    // Navigate to artist page (assuming you have one)
+    // router.push(`/artist/${artist.id}`);
   };
 
   return (
     <div
-      onClick={handlePlay}
-      className="group relative p-5 rounded-lg bg-card hover:bg-card/80 transition-colors cursor-pointer"
+      className="group relative space-y-3 cursor-pointer"
+      onClick={handleNavigateToArtist}
     >
-      <div className="w-24 h-24 md:w-28 md:h-28 rounded-lg overflow-hidden bg-secondary shadow-lg mb-4">
-        {track.thumbnail ? (
-          <img
-            src={track.thumbnail || "/placeholder.svg"}
-            alt={track.title}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/30 to-primary/10">
-            <span className="text-3xl font-bold text-primary">
-              {track.title[0]}
-            </span>
-          </div>
-        )}
+      <Avatar className="w-full h-auto aspect-square">
+        <AvatarImage src={artist.avatar_url ?? undefined} alt={artist.name} />
+        <AvatarFallback>{artist.name[0]}</AvatarFallback>
+      </Avatar>
+      <div className="min-h-16">
+        <h4 className="font-semibold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+          {artist.name}
+        </h4>
+        <span className="inline-block mt-2 px-2 py-0.5 text-xs font-semibold bg-secondary rounded-full">
+          Artist
+        </span>
       </div>
-      <h3 className="text-2xl font-bold text-foreground line-clamp-1 mb-1">
-        {track.title}
-      </h3>
-      <p className="text-sm text-muted-foreground">{track.artist}</p>
-      <span className="inline-block mt-2 px-3 py-1 text-xs font-semibold bg-secondary rounded-full">
-        Song
-      </span>
+    </div>
+  );
+}
 
-      {/* Play button */}
-      <div
-        className={`absolute bottom-5 right-5 transition-all duration-200 ${
-          isCurrentlyPlaying
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0"
-        }`}
-      >
-        <Button
-          size="icon"
-          className="w-12 h-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-105 shadow-xl transition-transform"
-        >
-          {isCurrentlyPlaying ? (
-            <span className="flex gap-0.5">
-              {[...Array(3)].map((_, i) => (
-                <span
-                  key={i}
-                  className="w-1 bg-primary-foreground rounded-full animate-pulse"
-                  style={{
-                    height: `${10 + Math.random() * 8}px`,
-                    animationDelay: `${i * 0.15}s`,
-                  }}
-                />
-              ))}
-            </span>
-          ) : (
-            <span className="w-5 h-5 border-l-12 border-y-8 border-y-transparent border-l-primary-foreground ml-1" />
-          )}
-        </Button>
+function AlbumCard({ album }: { album: Album }) {
+  const router = useRouter();
+
+  const handleNavigateToAlbum = () => {
+    router.push(`/album/${album.id}`);
+  };
+
+  return (
+    <div
+      className="group relative space-y-3 cursor-pointer"
+      onClick={handleNavigateToAlbum}
+    >
+      <div className="relative h-40 rounded-lg overflow-hidden bg-secondary">
+        <img
+          src={album.cover_url ?? "/placeholder.svg"}
+          alt={album.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+      </div>
+      <div className="min-h-16">
+        <h4 className="font-semibold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+          {album.name}
+        </h4>
+        <p className="text-xs text-muted-foreground line-clamp-1">
+          {album.release_year}
+        </p>
+        <span className="inline-block mt-2 px-2 py-0.5 text-xs font-semibold bg-secondary rounded-full">
+          Album
+        </span>
       </div>
     </div>
   );
@@ -529,7 +493,7 @@ function PlaylistCard({ playlist }: { playlist: PlaylistItem }) {
   };
 
   return (
-    <div 
+    <div
       className="group relative space-y-3 cursor-pointer"
       onClick={handleNavigateToAlbum}
     >
@@ -549,7 +513,6 @@ function PlaylistCard({ playlist }: { playlist: PlaylistItem }) {
           </Button>
         </div>
       </div>
-
       <div className="min-h-16">
         <h4 className="font-semibold text-sm text-foreground line-clamp-2 group-hover:text-primary transition-colors">
           {playlist.title}
@@ -564,4 +527,3 @@ function PlaylistCard({ playlist }: { playlist: PlaylistItem }) {
     </div>
   );
 }
-

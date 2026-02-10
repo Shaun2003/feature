@@ -3,7 +3,9 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/contexts/auth-context'
+import { GamificationProvider } from '@/contexts/gamification-context'
 import { ThemeProvider } from '@/components/theme-provider'
+import { ToastProvider } from '@/hooks/use-toast-provider'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -71,7 +73,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {children}
+            <GamificationProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </GamificationProvider>
           </AuthProvider>
         </ThemeProvider>
         <Analytics />

@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Library, Plus, Heart, Music, ListMusic, User, BarChart3 } from "lucide-react";
+import { Home, Search, Library, Plus, Heart, Music, ListMusic, User, BarChart3, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { GamificationWidget } from "@/components/gamification/gamification-widget";
 import { memo } from "react";
 
 interface SidebarProps {
@@ -15,6 +16,7 @@ interface SidebarProps {
 const mainNavItems = [
   { href: "/", icon: Home, label: "Home" },
   { href: "/search", icon: Search, label: "Search" },
+  { href: "/artists", icon: Users, label: "Artists" },
   { href: "/stats", icon: BarChart3, label: "Stats" },
 ];
 
@@ -55,6 +57,9 @@ function SidebarComponent({ className }: SidebarProps) {
           })}
         </nav>
       </div>
+      
+      {/* Gamification Widget */}
+      <GamificationWidget />
 
       {/* Library Section */}
       <div className="flex-1 bg-card rounded-lg flex flex-col min-h-0">
@@ -150,4 +155,3 @@ function SidebarComponent({ className }: SidebarProps) {
 }
 
 export const Sidebar = memo(SidebarComponent);
-

@@ -1,6 +1,6 @@
 -- ============================================================================
--- MUSICA PHASE 1-4 COMPLETE MIGRATION SCRIPT
--- FIXED VERSION - All foreign keys reference auth.users(id)
+-- MUSICA PHASE 1-5 COMPLETE MIGRATION SCRIPT
+-- FIXED VERSION - Idempotent and safe to re-run
 -- ============================================================================
 
 -- ============================================================================
@@ -62,11 +62,17 @@ CREATE INDEX IF NOT EXISTS idx_mood_playlists_mood ON mood_playlists(mood);
 -- PHASE 3: Social Features (Enhanced)
 -- ============================================================================
 
--- Extend existing profiles table with new columns
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS bio TEXT;
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS favorite_genres TEXT[];
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT TRUE;
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS social_links JSONB DEFAULT '{}';
+-- Create custom users_profile table
+CREATE TABLE IF NOT EXISTS users_profile (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    display_name TEXT UNIQUE,
+    avatar_url TEXT,
+    bio TEXT,
+    favorite_genres TEXT[],
+    is_public BOOLEAN DEFAULT TRUE,
+    social_links JSONB DEFAULT '{}'
+);
+CREATE INDEX IF NOT EXISTS idx_users_profile_display_name ON users_profile(display_name);
 
 -- Create followers table
 CREATE TABLE IF NOT EXISTS followers (
@@ -159,7 +165,41 @@ CREATE TABLE IF NOT EXISTS user_preferences (
 );
 
 -- ============================================================================
--- ROW LEVEL SECURITY - Phase 1-4 Tables
+-- PHASE 5: Artist & Album Entities for Enhanced Search
+-- ============================================================================
+
+-- Create artists table
+CREATE TABLE IF NOT EXISTS artists (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL UNIQUE,
+  avatar_url TEXT,
+  bio TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_artists_name ON artists(name);
+
+-- Create albums table
+CREATE TABLE IF NOT EXISTS albums (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  artist_id UUID REFERENCES artists(id) ON DELETE CASCADE,
+  cover_url TEXT,
+  release_year INTEGER,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_albums_artist_id ON albums(artist_id);
+CREATE INDEX IF NOT EXISTS idx_albums_name ON albums(name);
+
+-- Create artist followers table
+CREATE TABLE IF NOT EXISTS artist_followers (
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  artist_id UUID NOT NULL REFERENCES artists(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (user_id, artist_id)
+);
+
+-- ============================================================================
+-- ROW LEVEL SECURITY - Phase 1-5 Tables
 -- ============================================================================
 
 ALTER TABLE listening_stats ENABLE ROW LEVEL SECURITY;
@@ -171,55 +211,65 @@ ALTER TABLE playlist_collaborators ENABLE ROW LEVEL SECURITY;
 ALTER TABLE track_lyrics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE recommendations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users_profile ENABLE ROW LEVEL SECURITY;
+ALTER TABLE artists ENABLE ROW LEVEL SECURITY;
+ALTER TABLE albums ENABLE ROW LEVEL SECURITY;
+ALTER TABLE artist_followers ENABLE ROW LEVEL SECURITY;
 
 -- Listening Stats Policies
+DROP POLICY IF EXISTS "Users can view own stats" ON listening_stats;
 CREATE POLICY "Users can view own stats" ON listening_stats
   FOR SELECT USING (auth.uid() = user_id);
-
+DROP POLICY IF EXISTS "Users can insert own stats" ON listening_stats;
 CREATE POLICY "Users can insert own stats" ON listening_stats
   FOR INSERT WITH CHECK (auth.uid() = user_id);
-
+DROP POLICY IF EXISTS "Users can update own stats" ON listening_stats;
 CREATE POLICY "Users can update own stats" ON listening_stats
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- Radio Stations Policies
+DROP POLICY IF EXISTS "Users can view own stations" ON radio_stations;
 CREATE POLICY "Users can view own stations" ON radio_stations
   FOR SELECT USING (auth.uid() = user_id);
-
+DROP POLICY IF EXISTS "Users can create stations" ON radio_stations;
 CREATE POLICY "Users can create stations" ON radio_stations
   FOR INSERT WITH CHECK (auth.uid() = user_id);
-
+DROP POLICY IF EXISTS "Users can delete own stations" ON radio_stations;
 CREATE POLICY "Users can delete own stations" ON radio_stations
   FOR DELETE USING (auth.uid() = user_id);
 
 -- Mood Playlists Policies
+DROP POLICY IF EXISTS "Users can view own mood playlists" ON mood_playlists;
 CREATE POLICY "Users can view own mood playlists" ON mood_playlists
   FOR SELECT USING (auth.uid() = user_id);
-
+DROP POLICY IF EXISTS "Users can create mood playlists" ON mood_playlists;
 CREATE POLICY "Users can create mood playlists" ON mood_playlists
   FOR INSERT WITH CHECK (auth.uid() = user_id);
-
+DROP POLICY IF EXISTS "Users can update own mood playlists" ON mood_playlists;
 CREATE POLICY "Users can update own mood playlists" ON mood_playlists
   FOR UPDATE USING (auth.uid() = user_id);
 
 -- Followers Policies
+DROP POLICY IF EXISTS "Anyone can view followers" ON followers;
 CREATE POLICY "Anyone can view followers" ON followers
   FOR SELECT USING (TRUE);
-
+DROP POLICY IF EXISTS "Users can follow others" ON followers;
 CREATE POLICY "Users can follow others" ON followers
   FOR INSERT WITH CHECK (auth.uid() = follower_id);
-
+DROP POLICY IF EXISTS "Users can unfollow" ON followers;
 CREATE POLICY "Users can unfollow" ON followers
   FOR DELETE USING (auth.uid() = follower_id);
 
 -- Activity Feed Policies
+DROP POLICY IF EXISTS "Users can view own activity" ON activity_feed;
 CREATE POLICY "Users can view own activity" ON activity_feed
   FOR SELECT USING (auth.uid() = user_id);
-
+DROP POLICY IF EXISTS "Users can create own activity" ON activity_feed;
 CREATE POLICY "Users can create own activity" ON activity_feed
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Playlist Collaborators Policies
+DROP POLICY IF EXISTS "Users can view collaborators" ON playlist_collaborators;
 CREATE POLICY "Users can view collaborators" ON playlist_collaborators
   FOR SELECT USING (
     EXISTS (
@@ -228,7 +278,7 @@ CREATE POLICY "Users can view collaborators" ON playlist_collaborators
       AND (playlists.user_id = auth.uid() OR playlist_collaborators.user_id = auth.uid())
     )
   );
-
+DROP POLICY IF EXISTS "Users can add collaborators to own playlists" ON playlist_collaborators;
 CREATE POLICY "Users can add collaborators to own playlists" ON playlist_collaborators
   FOR INSERT WITH CHECK (
     EXISTS (
@@ -239,28 +289,74 @@ CREATE POLICY "Users can add collaborators to own playlists" ON playlist_collabo
   );
 
 -- Track Lyrics Policies
+DROP POLICY IF EXISTS "Anyone can view lyrics" ON track_lyrics;
 CREATE POLICY "Anyone can view lyrics" ON track_lyrics
   FOR SELECT USING (TRUE);
+DROP POLICY IF EXISTS "Users can insert lyrics" ON track_lyrics;
+CREATE POLICY "Users can insert lyrics" ON track_lyrics
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Users can update lyrics" ON track_lyrics;
+CREATE POLICY "Users can update lyrics" ON track_lyrics
+  FOR UPDATE WITH CHECK (auth.role() = 'authenticated');
 
 -- Recommendations Policies
+DROP POLICY IF EXISTS "Users can view own recommendations" ON recommendations;
 CREATE POLICY "Users can view own recommendations" ON recommendations
   FOR SELECT USING (auth.uid() = user_id);
 
 -- User Preferences Policies
+DROP POLICY IF EXISTS "Users can view own preferences" ON user_preferences;
 CREATE POLICY "Users can view own preferences" ON user_preferences
   FOR SELECT USING (auth.uid() = id);
-
+DROP POLICY IF EXISTS "Users can update own preferences" ON user_preferences;
 CREATE POLICY "Users can update own preferences" ON user_preferences
   FOR UPDATE USING (auth.uid() = id);
-
+DROP POLICY IF EXISTS "Users can create preferences" ON user_preferences;
 CREATE POLICY "Users can create preferences" ON user_preferences
   FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- Users Profile Policies
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON users_profile;
+CREATE POLICY "Public profiles are viewable by everyone" ON users_profile
+  FOR SELECT USING (is_public = true);
+DROP POLICY IF EXISTS "Users can insert their own profile" ON users_profile;
+CREATE POLICY "Users can insert their own profile" ON users_profile
+  FOR INSERT WITH CHECK (auth.uid() = id);
+DROP POLICY IF EXISTS "Users can update their own profile" ON users_profile;
+CREATE POLICY "Users can update their own profile" ON users_profile
+  FOR UPDATE USING (auth.uid() = id);
+
+-- Artists Policies
+DROP POLICY IF EXISTS "Anyone can view artists" ON artists;
+CREATE POLICY "Anyone can view artists" ON artists
+  FOR SELECT USING (TRUE);
+DROP POLICY IF EXISTS "Authenticated users can create artists" ON artists;
+CREATE POLICY "Authenticated users can create artists" ON artists
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+-- Albums Policies
+DROP POLICY IF EXISTS "Anyone can view albums" ON albums;
+CREATE POLICY "Anyone can view albums" ON albums
+  FOR SELECT USING (TRUE);
+DROP POLICY IF EXISTS "Authenticated users can create albums" ON albums;
+CREATE POLICY "Authenticated users can create albums" ON albums
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+-- Artist Followers Policies
+DROP POLICY IF EXISTS "Anyone can view artist followers" ON artist_followers;
+CREATE POLICY "Anyone can view artist followers" ON artist_followers
+  FOR SELECT USING (TRUE);
+DROP POLICY IF EXISTS "Users can follow artists" ON artist_followers;
+CREATE POLICY "Users can follow artists" ON artist_followers
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can unfollow artists" ON artist_followers;
+CREATE POLICY "Users can unfollow artists" ON artist_followers
+  FOR DELETE USING (auth.uid() = user_id);
 
 -- ============================================================================
 -- COMPLETION MESSAGE
 -- ============================================================================
--- All Phase 1-4 migrations completed successfully!
--- Tables created: 9 new tables
--- Columns added: 5 new columns to existing profiles and playlists tables
--- RLS policies: 20+ security policies enabled
--- Indexes: 12+ performance indexes created
+-- All Phase 1-5 migrations completed successfully!
+-- Tables created: 12 new tables
+-- RLS policies: All security policies enabled and idempotent
+-- Indexes: 15+ performance indexes created
